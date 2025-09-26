@@ -1,11 +1,24 @@
-import { CameraView, useCameraPermissions } from "expo-camera";
+import { Camera, CameraView } from "expo-camera";
 import { useEffect, useState } from "react";
 import { Audio } from "expo-av";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function App() {
-  const [permission, requestPermission] = useCameraPermissions();
+  const [hasPermission, setHasPermission] = useState(null);
+  const [scanned, setScanned] = useState(false);
   const [sound, setSound] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      setHasPermission(status === "granted");
+      await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
+    })();
+  }, []);
+
+  useEffect(() => {
+    return sound ? () => sound.unloadAsync() : undefined;
+  }, [sound]);
 
   const playAudio = async () => {
     if (sound) {
@@ -13,30 +26,32 @@ export default function App() {
       setSound(null);
     }
 
-    const { sound: newSound } = await Audio.Sound.createAsync(
+    const { sound: s } = await Audio.Sound.createAsync(
       require("./assets/audio.mp3")
     );
-    setSound(newSound);
-    await newSound.playAsync();
+    setSound(s);
+    await s.playAsync();
   };
 
-  useEffect(() => {
-    return sound
-      ? () => {
-          sound.unloadAsync();
-        }
-      : undefined;
-  }, [sound]);
+  const handleBarcodeScanned = async (result) => {
+    if (!scanned && result?.data === "MEU_QR_CODE") {
+      setScanned(true);
+      await playAudio();
+    }
+  };
 
-  if (!permission) {
-    return <View />;
-  }
-
-  if (!permission.granted) {
+  if (hasPermission === null) return <View />;
+  if (hasPermission === false) {
     return (
       <View style={styles.center}>
         <Text>Precisamos da permissão da câmera</Text>
-        <TouchableOpacity onPress={requestPermission} style={styles.button}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={async () => {
+            const { status } = await Camera.requestCameraPermissionsAsync();
+            setHasPermission(status === "granted");
+          }}
+        >
           <Text style={styles.label}>Conceder permissão</Text>
         </TouchableOpacity>
       </View>
@@ -45,10 +60,18 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <CameraView style={styles.camera}>
-        <TouchableOpacity style={styles.overlay} onPress={playAudio}>
-          <Text style={styles.label}>🎵 Toque na imagem</Text>
-        </TouchableOpacity>
+      <CameraView
+        style={styles.camera}
+        barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+        onBarcodeScanned={handleBarcodeScanned}
+      >
+        {scanned && (
+          <View style={styles.overlay}>
+            <Text style={styles.label}>
+              🎵 QRCode reconhecido! Tocando música...
+            </Text>
+          </View>
+        )}
       </CameraView>
     </View>
   );
@@ -59,7 +82,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   camera: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
   },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   button: {
