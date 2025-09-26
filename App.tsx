@@ -64,7 +64,7 @@ export default function App() {
         style={styles.camera}
         barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
         onBarcodeScanned={handleBarcodeScanned}
-      >
+      />
         {scanned && (
           <View style={styles.overlay}>
             <Text style={styles.label}>
@@ -72,7 +72,6 @@ export default function App() {
             </Text>
           </View>
         )}
-      </CameraView>
     </View>
   );
 }

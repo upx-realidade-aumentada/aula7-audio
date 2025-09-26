@@ -1,7 +1,7 @@
 {
   "name": "ra-audio-demo",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -16,5 +16,9 @@
     "react": "19.1.0",
     "react-native": "0.81.4"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "@types/react": "~19.1.13",
+    "typescript": "~5.9.2"
+  }
 }
