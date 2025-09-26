@@ -5,7 +5,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function App() {
   const [permission, requestPermission] = useCameraPermissions();
-  const [sound, setSound] = useState(null);
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
 
   const playAudio = async () => {
     if (sound) {
