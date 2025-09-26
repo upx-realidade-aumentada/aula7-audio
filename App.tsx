@@ -45,11 +45,10 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <CameraView style={styles.camera}>
+      <CameraView style={styles.camera} />
         <TouchableOpacity style={styles.overlay} onPress={playAudio}>
           <Text style={styles.label}>🎵 Toque na imagem</Text>
         </TouchableOpacity>
-      </CameraView>
     </View>
   );
 }
